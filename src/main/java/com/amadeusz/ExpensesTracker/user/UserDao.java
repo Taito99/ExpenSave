@@ -7,6 +7,7 @@ import java.util.UUID;
 public interface UserDao {
     List<User> selectAllUsers();
     Optional<User> selectUserById(UUID id);
+    Optional<User> selectUserByEmail(String email);
     boolean existsPersonWithEmail(String email);
     boolean existsPersonWithId(UUID id);
 

@@ -23,6 +23,11 @@ public class UserDataAccessService implements UserDao{
     }
 
     @Override
+    public Optional<User> selectUserByEmail(String email) {
+        return userRepository.findUserByEmail(email);
+    }
+
+    @Override
     public boolean existsPersonWithEmail(String email) {
         return userRepository.existsUserByEmail(email);
     }
