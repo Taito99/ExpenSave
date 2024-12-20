@@ -34,19 +34,24 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String lastName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
-    private BigDecimal budget = BigDecimal.ZERO;
+    private BigDecimal monthlyBudget = BigDecimal.ZERO;
+
+    @Column(nullable = false)
+    private BigDecimal availableBudget = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "owner",
+            cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+            orphanRemoval = true)
     private List<Expense> expenses = new ArrayList<>();
 
 

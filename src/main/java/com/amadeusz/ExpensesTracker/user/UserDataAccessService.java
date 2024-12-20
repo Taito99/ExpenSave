@@ -19,12 +19,17 @@ public class UserDataAccessService implements UserDao{
 
     @Override
     public Optional<User> selectUserById(UUID id) {
-        return userRepository.findById(id);
+        return userRepository.findUserById(id);
     }
 
     @Override
     public Optional<User> selectUserByEmail(String email) {
         return userRepository.findUserByEmail(email);
+    }
+
+    @Override
+    public void insertUser(User user) {
+        userRepository.save(user);
     }
 
     @Override
