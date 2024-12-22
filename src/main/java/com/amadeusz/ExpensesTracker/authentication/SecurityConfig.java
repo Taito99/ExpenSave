@@ -1,4 +1,4 @@
-package com.amadeusz.ExpensesTracker.config;
+package com.amadeusz.ExpensesTracker.authentication;
 
 import com.amadeusz.ExpensesTracker.user.UserService;
 import org.springframework.context.annotation.Bean;

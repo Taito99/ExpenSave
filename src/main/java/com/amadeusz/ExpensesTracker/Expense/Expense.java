@@ -53,4 +53,11 @@ public class Expense {
     @Column(nullable = false)
     private Integer quantity;
 
+    @PrePersist
+    private void prePersist() {
+        if (this.date == null) {
+            this.date = LocalDate.now();
+        }
+    }
+
 }

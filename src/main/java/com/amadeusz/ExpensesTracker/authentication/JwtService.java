@@ -1,4 +1,4 @@
-package com.amadeusz.ExpensesTracker.config;
+package com.amadeusz.ExpensesTracker.authentication;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
@@ -20,7 +20,7 @@ public class JwtService {
 
     Dotenv dotenv = Dotenv.load();
 
-    String jwtSecretKey = dotenv.get("JWT_SECRET");
+    String jwtSecretKey = dotenv.get("JWT_SECRET_KEY");
     Long jwtExpirationMs = 24 * 60 * 60 * 1000L;
 
     public String extractUserName(String token) {

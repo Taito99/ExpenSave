@@ -40,18 +40,19 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private BigDecimal monthlyBudget = BigDecimal.ZERO;
+    @Column(columnDefinition="Decimal(10,2) default '0.00'")
+    private BigDecimal monthlyBudget;
 
-    @Column(nullable = false)
-    private BigDecimal availableBudget = BigDecimal.ZERO;
+    @Column(columnDefinition="Decimal(10,2) default '0.00'")
+    private BigDecimal availableBudget;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @OneToMany(mappedBy = "owner",
             cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
-            orphanRemoval = true)
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private List<Expense> expenses = new ArrayList<>();
 
 
@@ -90,4 +91,15 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    @PrePersist
+    private void prePersist() {
+    if (monthlyBudget == null) {
+        monthlyBudget = BigDecimal.ZERO;
+    }
+    if (availableBudget == null) {
+        availableBudget = BigDecimal.ZERO;
+    }
+}
+
 }

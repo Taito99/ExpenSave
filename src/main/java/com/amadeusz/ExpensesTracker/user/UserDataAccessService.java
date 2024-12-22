@@ -28,6 +28,11 @@ public class UserDataAccessService implements UserDao{
     }
 
     @Override
+    public void deleteCurrentUser(User user) {
+        userRepository.delete(user);
+    }
+
+    @Override
     public void insertUser(User user) {
         userRepository.save(user);
     }

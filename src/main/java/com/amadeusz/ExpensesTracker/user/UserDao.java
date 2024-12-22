@@ -8,6 +8,7 @@ public interface UserDao {
     List<User> selectAllUsers();
     Optional<User> selectUserById(UUID id);
     Optional<User> selectUserByEmail(String email);
+    void deleteCurrentUser(User user);
     void insertUser(User user);
     boolean existsPersonWithEmail(String email);
     boolean existsPersonWithId(UUID id);
