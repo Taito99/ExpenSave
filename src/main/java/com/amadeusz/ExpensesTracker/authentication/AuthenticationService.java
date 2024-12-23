@@ -24,10 +24,16 @@ public class AuthenticationService {
             throw new DuplicateResourceException("Email already exists");
         }
 
+        if(userRepository.existsUserByEmail(request.username())) {
+            throw new DuplicateResourceException("Username already exists");
+        }
+
+
         var user = User
                 .builder()
                 .firstName(request.firstName())
                 .lastName(request.lastName())
+                .username(request.username())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER)
@@ -41,8 +47,8 @@ public class AuthenticationService {
 
     public JwtAuthenticationResponse signIn(SignInRequestDto request) {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password()));
-        var user = userRepository.findUserByEmail(request.email())
+                new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        var user = userRepository.findUserByUsername(request.username())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
         var jwt = jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);

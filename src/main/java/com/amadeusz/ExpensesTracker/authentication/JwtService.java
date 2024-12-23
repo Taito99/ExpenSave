@@ -18,47 +18,71 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    Dotenv dotenv = Dotenv.load();
+    private final Dotenv dotenv = Dotenv.load();
 
-    String jwtSecretKey = dotenv.get("JWT_SECRET_KEY");
-    Long jwtExpirationMs = 24 * 60 * 60 * 1000L;
+    private final String jwtSecretKey = dotenv.get("JWT_SECRET_KEY");
+    private final Long jwtExpirationMs = 24 * 60 * 60 * 1000L;
 
-    public String extractUserName(String token) {
-        return extractClaim(token, Claims::getSubject);
+    /**
+     * Extract the username from the token.
+     */
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject); // Now returns the username
     }
 
+    /**
+     * Generate a JWT token for the user.
+     */
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
+    /**
+     * Validate if the token is valid for the provided user.
+     */
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String userName = extractUserName(token);
-        return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        final String usernameFromToken = extractUsername(token);
+        return usernameFromToken.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {
+    /**
+     * Extract a specific claim from the token.
+     */
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
-        return claimsResolvers.apply(claims);
+        return claimsResolver.apply(claims);
     }
 
+    /**
+     * Generate a token with additional claims.
+     */
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(userDetails.getUsername()) // Save the username as the subject
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    /**
+     * Check if the token has expired.
+     */
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
+    /**
+     * Extract the expiration date from the token.
+     */
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    /**
+     * Extract all claims from the token.
+     */
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(getSigningKey())
@@ -67,6 +91,9 @@ public class JwtService {
                 .getBody();
     }
 
+    /**
+     * Get the signing key for JWT.
+     */
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecretKey);
         return Keys.hmacShaKeyFor(keyBytes);

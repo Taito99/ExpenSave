@@ -49,7 +49,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(HttpMethod.POST, "/api/v1/sign-in", "/api/v1/sign-up").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/user/sign-in", "/api/v1/user/sign-up").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/test/**").permitAll()
                         .anyRequest().authenticated()
                 )

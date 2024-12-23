@@ -29,6 +29,7 @@ public class SeedDataConfig implements CommandLineRunner {
                     .firstName("user")
                     .lastName("userowy")
                     .email("user@example.com")
+                    .username("userr")
                     .password(passwordEncoder.encode("password"))
                     .role(Role.USER)
                     .build();

@@ -19,46 +19,64 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final JwtService jwtService;
     private final UserService userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                HttpServletResponse response,
-                                FilterChain filterChain) throws ServletException, IOException {
-    final String path = request.getServletPath();
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        final String path = request.getServletPath();
 
-    if (path.equals("/api/v1/sign-up") || path.equals("/api/v1/sign-in")) {
-        filterChain.doFilter(request, response);
-        return;
-    }
-
-    final String authHeader = request.getHeader("Authorization");
-    final String jwtToken;
-    final String userEmail;
-
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        filterChain.doFilter(request, response);
-        return;
-    }
-
-    jwtToken = authHeader.substring(7);
-    userEmail = jwtService.extractUserName(jwtToken);
-
-    if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        UserDetails userDetails = userService.loadUserByUsername(userEmail);
-
-        if (jwtService.isTokenValid(jwtToken, userDetails)) {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities()
-            );
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+        // Skip public endpoints
+        if ("/api/v1/user/sign-up".equals(path) || "/api/v1/user/sign-in".equals(path)) {
+            log.debug("Public endpoint accessed: {}", path);
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        final String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("Missing or invalid Authorization header");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        final String jwtToken = authHeader.substring(7);
+        String username;
+
+        try {
+            username = jwtService.extractUsername(jwtToken); // Extracting username from JWT
+        } catch (Exception e) {
+            log.error("Failed to extract username from JWT: {}", e.getMessage());
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails;
+            try {
+                userDetails = userService.loadUserByUsername(username); // Load user by username
+            } catch (Exception ex) {
+                log.error("Failed to load user details for username {}: {}", username, ex.getMessage());
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (jwtService.isTokenValid(jwtToken, userDetails)) {
+                log.info("User authenticated successfully: {}", username);
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                log.warn("Invalid JWT token for username: {}", username);
+            }
+        }
+
+        filterChain.doFilter(request, response);
     }
-
-    filterChain.doFilter(request, response);
-}
-
 }

@@ -31,6 +31,6 @@ public class ExpenseDataAccessService implements ExpenseDao {
 
     @Override
     public Optional<Expense> getExpenseById(UUID id) {
-        return Optional.empty();
+        return expenseRepository.findById(id);
     }
 }

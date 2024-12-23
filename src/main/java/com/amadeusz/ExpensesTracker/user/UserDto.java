@@ -1,4 +1,6 @@
 package com.amadeusz.ExpensesTracker.user;
 
-public record UserDto(String firstName, String lastName, String email, String password) {
+import java.math.BigDecimal;
+
+public record UserDto(String firstName, String lastName, String username, String email, BigDecimal monthlyBudget, BigDecimal availableBudget ) {
 }
