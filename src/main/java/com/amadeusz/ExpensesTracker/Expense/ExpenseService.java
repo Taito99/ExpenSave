@@ -2,6 +2,7 @@ package com.amadeusz.ExpensesTracker.Expense;
 
 import com.amadeusz.ExpensesTracker.category.Category;
 import com.amadeusz.ExpensesTracker.category.CategoryRepository;
+import com.amadeusz.ExpensesTracker.exeptions.NotAllowedException;
 import com.amadeusz.ExpensesTracker.exeptions.ResourceNotFoundException;
 import com.amadeusz.ExpensesTracker.user.User;
 import com.amadeusz.ExpensesTracker.user.UserContextService;
@@ -13,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class ExpenseService {
     private final UserRepository userRepository;
     private final UserContextService userContextService;
     private final ExpenseRepository expenseRepository;
+    private final ExpenseMapper expenseMapper;
 
     @Transactional
     public void createExpense(ExpenseDto expenseDto) {
@@ -53,36 +57,57 @@ public class ExpenseService {
         expenseRepository.save(expense);
         log.info("Expense saved to database: {}", expense);
 
-        BigDecimal currentBudget = user.getAvailableBudget().subtract(expenseDto.price());
-        user.setAvailableBudget(currentBudget);
-        log.info("Updated user's available budget: {}", currentBudget);
+        user.setAvailableBudget(user.getAvailableBudget().subtract(expenseDto.price()));
 
         user.getExpenses().add(expense);
         userRepository.save(user);
         log.info("User updated with new expense.");
     }
 
-    public Expense getExpenseDetails(UUID expenseId) {
-        log.info("Fetching details for expense ID: {}", expenseId);
+    public ExpenseDto getExpenseDetails(UUID expenseId) {
+       ExpenseDto expense = expenseDao.getExpenseById(expenseId)
+               .map(expenseMapper)
+               .orElseThrow(() -> new ResourceNotFoundException("Expense with id: %s has been not found".formatted(expenseId)));
+       String username = userContextService.getAuthenticatedUsername();
+       User user = userRepository.findUserByUsername(username)
+               .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+       if(!expense.ownerId().equals(user.getId())) {
+           throw new NotAllowedException("User is not owner of expense");
+       }
+       return expense;
 
-        return expenseDao.getExpenseById(expenseId).orElseThrow(
-                () -> new ResourceNotFoundException("Expense with id: %s has not been found".formatted(expenseId)));
     }
 
     @Transactional
     public void deleteExpense(UUID expenseId) {
-        log.info("Attempting to delete expense ID: {}", expenseId);
 
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense with id: %s has not been found".formatted(expenseId)));
 
-        User owner = expense.getOwner();
-        BigDecimal updatedBudget = owner.getAvailableBudget().add(expense.getPrice());
-        owner.setAvailableBudget(updatedBudget);
-        log.info("Restored user's budget after deleting expense. New budget: {}", updatedBudget);
+        String username = userContextService.getAuthenticatedUsername();
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!expense.getOwner().getId().equals(user.getId())) {
+            throw new NotAllowedException("User is not owner of expense");
+        }
+
+        BigDecimal updatedBudget = user.getAvailableBudget().add(expense.getPrice());
+        user.setAvailableBudget(updatedBudget);
 
         expenseRepository.delete(expense);
-        userRepository.save(owner);
-        log.info("Expense deleted and user updated.");
+        userRepository.save(user);
+    }
+
+    public List<ExpenseDto> getAllExpensesOfUser() {
+        String username = userContextService.getAuthenticatedUsername();
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return user.getExpenses()
+                .stream()
+                .map(expenseMapper)
+                .collect(Collectors.toList());
+
     }
 }

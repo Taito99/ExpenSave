@@ -1,5 +1,6 @@
 package com.amadeusz.ExpensesTracker.user;
 
+import com.amadeusz.ExpensesTracker.Expense.Expense;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 

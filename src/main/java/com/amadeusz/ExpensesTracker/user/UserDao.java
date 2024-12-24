@@ -1,5 +1,7 @@
 package com.amadeusz.ExpensesTracker.user;
 
+import com.amadeusz.ExpensesTracker.Expense.Expense;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

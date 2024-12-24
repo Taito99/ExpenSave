@@ -5,13 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/expenses")
+@RequestMapping("/api/v1/expenses/")
 @RequiredArgsConstructor
 @Slf4j
 public class ExpenseController {
@@ -37,5 +36,16 @@ public class ExpenseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
+
+    @GetMapping(value = "{expenseId}")
+    public ResponseEntity<ExpenseDto> getExpenseDetails(@PathVariable UUID expenseId) {
+        return ResponseEntity.ok(expenseService.getExpenseDetails(expenseId));
+    }
+    @DeleteMapping(value = "/{expenseId}")
+    public ResponseEntity<Void> deleteExpense(@PathVariable UUID expenseId) {
+        expenseService.deleteExpense(expenseId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 
