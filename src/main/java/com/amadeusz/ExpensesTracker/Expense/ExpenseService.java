@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,18 +32,18 @@ public class ExpenseService {
 
     @Transactional
     public void createExpense(ExpenseDto expenseDto) {
-        log.info("Starting to create expense: {}", expenseDto);
+        log.info("Starting to create expense: %s".formatted(expenseDto));
 
         String username = userContextService.getAuthenticatedUsername();
-        log.info("Authenticated username: {}", username);
+        log.info("Authenticated username: %s".formatted(username));
 
         User user = userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User with email: %s has not been found".formatted(username)));
-        log.info("User found: {}", user.getUsername());
+        log.info("User found: %s".formatted(user.getUsername()));
 
         Category category = categoryRepository.findCategoryByName(expenseDto.categoryName())
                 .orElseThrow(() -> new ResourceNotFoundException("Category with name: %s has not been found".formatted(expenseDto.categoryName())));
-        log.info("Category found: {}", category.getName());
+        log.info("Category found: %s".formatted(category.getName()));
 
 
         Expense expense = Expense.builder()
@@ -54,12 +55,33 @@ public class ExpenseService {
                 .owner(user)
                 .build();
 
-        expenseRepository.save(expense);
-        log.info("Expense saved to database: {}", expense);
+
+        BigDecimal categoryLimit = user.getCategoryLimits().get(category.getName());
+        if (categoryLimit == null) {
+            user.getExpenses().add(expense);
+            user.setAvailableBudget(user.getAvailableBudget().subtract(expense.getPrice()));
+            expenseDao.insertExpense(expense);
+            userRepository.save(user);
+            return;
+        }
+        BigDecimal totalSpent = user.getExpenses()
+                        .stream()
+                                .filter(expense1 -> expense1.getCategory().getName().equals(expense.getCategory().getName()))
+                                        .map(Expense::getPrice)
+                                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (totalSpent.add(expenseDto.price()).compareTo(categoryLimit) > 0) {
+            throw new IllegalStateException("Exceeded category limit for " + expenseDto.categoryName());
+        }
+
+        expenseDao.insertExpense(expense);
+        log.info("Expense saved to database: ".formatted(expense.getName()));
 
         user.setAvailableBudget(user.getAvailableBudget().subtract(expenseDto.price()));
 
         user.getExpenses().add(expense);
+        BigDecimal newLimit = user.getCategoryLimits().get(category.getName()).subtract(expenseDto.price());
+        user.getCategoryLimits().put(category.getName(), newLimit);
         userRepository.save(user);
         log.info("User updated with new expense.");
     }
@@ -78,6 +100,22 @@ public class ExpenseService {
 
     }
 
+    public BigDecimal totalSpendingForGivenCategory(String categoryName) {
+        String username = userContextService.getAuthenticatedUsername();
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        BigDecimal totalSpending = user.getExpenses()
+                .stream()
+                .filter(expense -> expense.getCategory().getName().equals(categoryName))
+                .map(Expense::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        log.info("Total spending for category %s: %s".formatted(categoryName, totalSpending));
+        return totalSpending;
+    }
+
+
     @Transactional
     public void deleteExpense(UUID expenseId) {
 
@@ -94,8 +132,7 @@ public class ExpenseService {
 
         BigDecimal updatedBudget = user.getAvailableBudget().add(expense.getPrice());
         user.setAvailableBudget(updatedBudget);
-
-        expenseRepository.delete(expense);
+        expenseDao.deleteExpense(expense);
         userRepository.save(user);
     }
 
@@ -109,5 +146,45 @@ public class ExpenseService {
                 .map(expenseMapper)
                 .collect(Collectors.toList());
 
+    }
+
+    public List<ExpenseDto> filterExpensesByCategory(String category) {
+        String username = userContextService.getAuthenticatedUsername();
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return user.getExpenses()
+                .stream()
+                .map(expenseMapper)
+                .filter(expenseDto -> expenseDto.categoryName().equalsIgnoreCase(category))
+                .collect(Collectors.toList());
+    }
+
+    public List<ExpenseDto> filterExpensesByDaysRange(Integer numberOfDays) {
+        String username = userContextService.getAuthenticatedUsername();
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        LocalDate startDate = LocalDate.now().minusDays(numberOfDays + 1);
+        LocalDate endDate = LocalDate.now().plusDays(1);
+
+        return user.getExpenses()
+                .stream()
+                .filter(expense -> expense.getDate().isAfter(startDate) && expense.getDate().isBefore(endDate))
+                .map(expenseMapper)
+                .collect(Collectors.toList());
+    }
+
+    public List<ExpenseDto> filterExpensesByDateRange(LocalDate from, LocalDate to) {
+        String username = userContextService.getAuthenticatedUsername();
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return user.getExpenses()
+                .stream()
+                .filter(expense -> (expense.getDate().isEqual(from) || expense.getDate().isAfter(from))
+                        && (expense.getDate().isEqual(to) || expense.getDate().isBefore(to)))
+                .map(expenseMapper)
+                .collect(Collectors.toList());
     }
 }

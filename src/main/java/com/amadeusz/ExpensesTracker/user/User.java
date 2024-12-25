@@ -2,19 +2,13 @@ package com.amadeusz.ExpensesTracker.user;
 
 import com.amadeusz.ExpensesTracker.Expense.Expense;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 @Data
@@ -23,6 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "_user")
+@ToString
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -57,6 +52,12 @@ public class User implements UserDetails {
             orphanRemoval = true,
             fetch = FetchType.LAZY)
     private List<Expense> expenses = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "user_category_limits", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "category_name")
+    @Column(name = "limit_amount")
+    private Map<String, BigDecimal> categoryLimits = new HashMap<>();
 
 
     @Override

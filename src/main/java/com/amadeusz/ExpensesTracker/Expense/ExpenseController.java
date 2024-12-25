@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -45,6 +47,42 @@ public class ExpenseController {
     public ResponseEntity<Void> deleteExpense(@PathVariable UUID expenseId) {
         expenseService.deleteExpense(expenseId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("total-category-spending/{categoryName}")
+    public ResponseEntity<BigDecimal> totalSpendingForCategory(@PathVariable String categoryName) {
+        log.info("Received request to get total spending for category: {}", categoryName);
+        try {
+            BigDecimal totalSpending = expenseService.totalSpendingForGivenCategory(categoryName);
+            return ResponseEntity.ok(totalSpending);
+        } catch (ResourceNotFoundException e) {
+            log.error("Error fetching total spending: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping("/list-all-expenses")
+    public ResponseEntity<List<ExpenseDto>> getAllExpensesOfUser() {
+        log.info("Received request to fetch all expenses for authenticated user.");
+        try {
+            List<ExpenseDto> expenses = expenseService.getAllExpensesOfUser();
+            return ResponseEntity.ok(expenses);
+        } catch (ResourceNotFoundException e) {
+            log.error("Error fetching expenses: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping("filter-by-category/{categoryName}")
+    public ResponseEntity<List<ExpenseDto>> filterExpensesByCategory(@PathVariable String categoryName) {
+        log.info("Received request to filter expenses by category: {}", categoryName);
+        try {
+            List<ExpenseDto> expenses = expenseService.filterExpensesByCategory(categoryName);
+            return ResponseEntity.ok(expenses);
+        } catch (ResourceNotFoundException e) {
+            log.error("Error fetching filtered expenses: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
 }

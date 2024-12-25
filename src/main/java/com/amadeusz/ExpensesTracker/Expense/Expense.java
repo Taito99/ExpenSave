@@ -16,6 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@ToString
 public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -47,6 +48,7 @@ public class Expense {
     @Column(nullable = false)
     private LocalDate date = LocalDate.now();
 
+
     @Column(nullable = false)
     private BigDecimal price;
 
@@ -58,6 +60,9 @@ public class Expense {
         if (this.date == null) {
             this.date = LocalDate.now();
         }
+
     }
+
+
 
 }
