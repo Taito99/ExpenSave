@@ -11,10 +11,10 @@ import java.util.UUID;
 public class ExpenseDataAccessService implements ExpenseDao {
     private final ExpenseRepository expenseRepository;
 
+
     @Override
-    public Expense insertExpense(Expense expense) {
+    public void insertExpense(Expense expense) {
         expenseRepository.save(expense);
-        return expense;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class ExpenseDataAccessService implements ExpenseDao {
     }
 
     @Override
-    public Optional<Expense> getExpenseById(UUID id) {
+    public Optional<Expense> findExpenseById(UUID id) {
         return expenseRepository.findById(id);
     }
 }

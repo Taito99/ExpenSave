@@ -87,7 +87,7 @@ public class ExpenseService {
     }
 
     public ExpenseDto getExpenseDetails(UUID expenseId) {
-       ExpenseDto expense = expenseDao.getExpenseById(expenseId)
+       ExpenseDto expense = expenseDao.findExpenseById(expenseId)
                .map(expenseMapper)
                .orElseThrow(() -> new ResourceNotFoundException("Expense with id: %s has been not found".formatted(expenseId)));
        String username = userContextService.getAuthenticatedUsername();
@@ -119,7 +119,7 @@ public class ExpenseService {
     @Transactional
     public void deleteExpense(UUID expenseId) {
 
-        Expense expense = expenseRepository.findById(expenseId)
+        Expense expense = expenseDao.findExpenseById(expenseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense with id: %s has not been found".formatted(expenseId)));
 
         String username = userContextService.getAuthenticatedUsername();
