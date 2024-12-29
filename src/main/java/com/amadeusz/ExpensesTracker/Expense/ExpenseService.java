@@ -71,7 +71,7 @@ public class ExpenseService {
                                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (totalSpent.add(expenseDto.price()).compareTo(categoryLimit) > 0) {
-            throw new IllegalStateException("Exceeded category limit for " + expenseDto.categoryName());
+            log.info("Category limit exceeded: %s".formatted(categoryLimit));
         }
 
         expenseDao.insertExpense(expense);

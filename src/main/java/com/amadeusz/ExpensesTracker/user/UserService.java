@@ -1,7 +1,5 @@
 package com.amadeusz.ExpensesTracker.user;
 
-import com.amadeusz.ExpensesTracker.Expense.Expense;
-import com.amadeusz.ExpensesTracker.Expense.ExpenseDto;
 import com.amadeusz.ExpensesTracker.Expense.ExpenseMapper;
 import com.amadeusz.ExpensesTracker.Expense.ExpenseRepository;
 import com.amadeusz.ExpensesTracker.exeptions.NotAllowedException;
@@ -17,8 +15,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
