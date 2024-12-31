@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -81,6 +82,28 @@ public class ExpenseController {
             return ResponseEntity.ok(expenses);
         } catch (ResourceNotFoundException e) {
             log.error("Error fetching filtered expenses: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping("filter-by-days-range/{numberOfDays}")
+    public ResponseEntity<List<ExpenseDto>> filterExpensesByDays(@PathVariable Integer numberOfDays) {
+        try {
+            List<ExpenseDto> expenses = expenseService.filterExpensesByDaysRange(numberOfDays);
+            return ResponseEntity.ok(expenses);
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+    }
+
+    @GetMapping("filter-by-date-range/{from}/{to}")
+    public ResponseEntity<List<ExpenseDto>> filterExpensesByDateRange(@PathVariable LocalDate from, @PathVariable LocalDate to) {
+        try {
+            List<ExpenseDto> expenses = expenseService.filterExpensesByDateRange(from, to);
+            return ResponseEntity.ok(expenses);
+        } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }

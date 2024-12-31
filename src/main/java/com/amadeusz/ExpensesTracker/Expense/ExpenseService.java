@@ -55,7 +55,6 @@ public class ExpenseService {
                 .owner(user)
                 .build();
 
-
         BigDecimal categoryLimit = user.getCategoryLimits().get(category.getName());
         if (categoryLimit == null) {
             user.getExpenses().add(expense);
