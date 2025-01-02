@@ -17,7 +17,7 @@ import java.util.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "_user")
-@ToString
+@ToString(exclude = "expenses")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

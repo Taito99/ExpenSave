@@ -16,7 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@ToString
+@ToString(exclude = "owner")
 public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

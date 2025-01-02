@@ -27,7 +27,6 @@ public class ExpenseService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final UserContextService userContextService;
-    private final ExpenseRepository expenseRepository;
     private final ExpenseMapper expenseMapper;
 
     @Transactional

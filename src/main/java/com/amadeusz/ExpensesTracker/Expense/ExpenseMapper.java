@@ -31,23 +31,27 @@ public class ExpenseMapper implements Function<Expense, ExpenseDto> {
     }
 
     private void validateExpense(Expense expense) {
-    if (expense.getPrice() == null || expense.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-        throw new InvalidExpenseException("Price must be greater than zero");
-    }
-    if (expense.getQuantity() == null || expense.getQuantity() <= 0) {
-        throw new InvalidExpenseException("Quantity must be greater than zero");
-    }
-    if (expense.getCategory() == null || expense.getCategory().getName() == null) {
-        throw new InvalidExpenseException("Category cannot be null");
-    }
-    if (expense.getOwner() == null || expense.getOwner().getId() == null) {
-        throw new InvalidExpenseException("Owner cannot be null");
-    }
+        if (expense.getName() == null || expense.getName().isBlank()) {
+            throw new InvalidExpenseException("Expense name cannot be blank");
+        }
 
-    if (expense.getDate() == null) {
-        throw new InvalidExpenseException("Date cannot be null");
+        if (expense.getPrice() == null || expense.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidExpenseException("Price must be greater than zero");
+        }
+        if (expense.getQuantity() == null || expense.getQuantity() <= 0) {
+            throw new InvalidExpenseException("Quantity must be greater than zero");
+        }
+        if (expense.getCategory() == null || expense.getCategory().getName() == null) {
+            throw new InvalidExpenseException("Category cannot be null");
+        }
+        if (expense.getOwner() == null || expense.getOwner().getId() == null) {
+            throw new InvalidExpenseException("Owner cannot be null");
+        }
+
+        if (expense.getDate() == null) {
+            throw new InvalidExpenseException("Date cannot be null");
+        }
     }
-}
 
 
 }
