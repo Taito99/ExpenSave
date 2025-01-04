@@ -153,8 +153,8 @@ class ExpenseServiceTest {
 
         ExpenseMapper expenseMapper = new ExpenseMapper();
 
-        when(userContextService.getAuthenticatedUsername()).thenReturn("testUsername");
-        when(userRepository.findUserByUsername("testUsername")).thenReturn(Optional.of(user));
+        when(userContextService.getAuthenticatedUsername()).thenReturn(user.getUsername());
+        when(userRepository.findUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(categoryRepository.findCategoryByName(expenseDto.categoryName())).thenReturn(Optional.of(category));
 
         // when
@@ -195,8 +195,8 @@ class ExpenseServiceTest {
 
         ExpenseMapper expenseMapper = new ExpenseMapper();
 
-        when(userContextService.getAuthenticatedUsername()).thenReturn("testUsername");
-        when(userRepository.findUserByUsername("testUsername")).thenReturn(Optional.of(user));
+        when(userContextService.getAuthenticatedUsername()).thenReturn(user.getUsername());
+        when(userRepository.findUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(categoryRepository.findCategoryByName(expenseDto.categoryName())).thenReturn(Optional.of(category));
 
         // when
@@ -237,8 +237,8 @@ class ExpenseServiceTest {
 
         ExpenseMapper expenseMapper = new ExpenseMapper();
 
-        when(userContextService.getAuthenticatedUsername()).thenReturn("testUsername");
-        when(userRepository.findUserByUsername("testUsername")).thenReturn(Optional.of(user));
+        when(userContextService.getAuthenticatedUsername()).thenReturn(user.getUsername());
+        when(userRepository.findUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(categoryRepository.findCategoryByName(expenseDto.categoryName())).thenReturn(Optional.of(category));
 
         // when
@@ -279,8 +279,8 @@ class ExpenseServiceTest {
 
         ExpenseMapper expenseMapper = new ExpenseMapper();
 
-        when(userContextService.getAuthenticatedUsername()).thenReturn("testUsername");
-        when(userRepository.findUserByUsername("testUsername")).thenReturn(Optional.of(user));
+        when(userContextService.getAuthenticatedUsername()).thenReturn(user.getUsername());
+        when(userRepository.findUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(categoryRepository.findCategoryByName(expenseDto.categoryName())).thenReturn(Optional.of(category));
 
         // when
@@ -344,6 +344,43 @@ class ExpenseServiceTest {
     public void should_find_expense_by_id() {
         // given
         UUID expenseId = initialExpense.getId();
+
+        ExpenseDto expectedExpenseDto = new ExpenseDto(
+                initialExpense.getName(),
+                initialExpense.getCategory().getName(),
+                initialExpense.getPrice(),
+                initialExpense.getQuantity(),
+                initialExpense.getOwner().getId(),
+                initialExpense.getDate()
+        );
+
+        when(userContextService.getAuthenticatedUsername()).thenReturn(user.getUsername());
+        when(userRepository.findUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
+        when(expenseDao.findExpenseById(expenseId)).thenReturn(Optional.of(initialExpense));
+        when(expenseMapper.apply(initialExpense)).thenReturn(expectedExpenseDto);
+
+        // when
+        ExpenseDto result = expenseService.getExpenseDetails(expenseId);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.name()).isEqualTo(expectedExpenseDto.name());
+        assertThat(result.price()).isEqualTo(expectedExpenseDto.price());
+        assertThat(result.quantity()).isEqualTo(expectedExpenseDto.quantity());
+        assertThat(result.ownerId()).isEqualTo(expectedExpenseDto.ownerId());
+        assertThat(result.categoryName()).isEqualTo(expectedExpenseDto.categoryName());
+        assertThat(result.date()).isEqualTo(expectedExpenseDto.date());
+
+        verify(userContextService, times(1)).getAuthenticatedUsername();
+        verify(userRepository, times(1)).findUserByUsername(user.getUsername());
+        verify(expenseDao, times(1)).findExpenseById(expenseId);
+        verify(expenseMapper, times(1)).apply(initialExpense);
+    }
+
+    @Test
+    public void should_not_find_expense_by_id() {
+        // given
+        UUID expenseId = UUID.randomUUID();
 
         ExpenseDto expectedExpenseDto = new ExpenseDto(
                 initialExpense.getName(),
