@@ -4,6 +4,7 @@ import com.amadeusz.ExpensesTracker.category.Category;
 import com.amadeusz.ExpensesTracker.category.CategoryRepository;
 import com.amadeusz.ExpensesTracker.user.Role;
 import com.amadeusz.ExpensesTracker.user.User;
+import com.amadeusz.ExpensesTracker.user.UserDao;
 import com.amadeusz.ExpensesTracker.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 public class SeedDataConfig implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final UserDao userDao;
     private final CategoryRepository categoryRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -34,7 +36,7 @@ public class SeedDataConfig implements CommandLineRunner {
                     .role(Role.USER)
                     .build();
 
-            userRepository.save(user);
+            userDao.saveUser(user);
             log.info("Default user created");
         }
 

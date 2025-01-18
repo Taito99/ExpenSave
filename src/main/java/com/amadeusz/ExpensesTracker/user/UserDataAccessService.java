@@ -1,12 +1,12 @@
 package com.amadeusz.ExpensesTracker.user;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserDataAccessService implements UserDao{
     private final UserRepository userRepository;
 
@@ -18,6 +18,11 @@ public class UserDataAccessService implements UserDao{
     @Override
     public void deleteCurrentUser(User user) {
         userRepository.delete(user);
+    }
+
+    @Override
+    public void saveUser(User user) {
+        userRepository.save(user);
     }
 
     @Override

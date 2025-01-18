@@ -13,15 +13,10 @@ public class ExpenseDataAccessService implements ExpenseDao {
 
 
     @Override
-    public void insertExpense(Expense expense) {
+    public void saveExpanse(Expense expense) {
         expenseRepository.save(expense);
     }
 
-    @Override
-    public void updateExpense(Expense expense) {
-        expenseRepository.save(expense);
-
-    }
 
     @Override
     public void deleteExpense(Expense expense) {

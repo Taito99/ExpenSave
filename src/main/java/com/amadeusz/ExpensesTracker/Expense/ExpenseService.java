@@ -6,6 +6,7 @@ import com.amadeusz.ExpensesTracker.exeptions.NotAllowedException;
 import com.amadeusz.ExpensesTracker.exeptions.ResourceNotFoundException;
 import com.amadeusz.ExpensesTracker.user.User;
 import com.amadeusz.ExpensesTracker.user.UserContextService;
+import com.amadeusz.ExpensesTracker.user.UserDao;
 import com.amadeusz.ExpensesTracker.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class ExpenseService {
     private final ExpenseDao expenseDao;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final UserDao userDao;
     private final UserContextService userContextService;
     private final ExpenseMapper expenseMapper;
 
@@ -58,8 +60,8 @@ public class ExpenseService {
         if (categoryLimit == null) {
             user.getExpenses().add(expense);
             user.setAvailableBudget(user.getAvailableBudget().subtract(expense.getPrice()));
-            expenseDao.insertExpense(expense);
-            userRepository.save(user);
+            expenseDao.saveExpanse(expense);
+            userDao.saveUser(user);
             return;
         }
         BigDecimal totalSpent = user.getExpenses()
@@ -72,7 +74,7 @@ public class ExpenseService {
             log.info("Category limit exceeded: %s".formatted(categoryLimit));
         }
 
-        expenseDao.insertExpense(expense);
+        expenseDao.saveExpanse(expense);
         log.info("Expense saved to database: ".formatted(expense.getName()));
 
         user.setAvailableBudget(user.getAvailableBudget().subtract(expenseDto.price()));
@@ -80,7 +82,7 @@ public class ExpenseService {
         user.getExpenses().add(expense);
         BigDecimal newLimit = user.getCategoryLimits().get(category.getName()).subtract(expenseDto.price());
         user.getCategoryLimits().put(category.getName(), newLimit);
-        userRepository.save(user);
+        userDao.saveUser(user);
         log.info("User updated with new expense.");
     }
 
@@ -131,7 +133,7 @@ public class ExpenseService {
         BigDecimal updatedBudget = user.getAvailableBudget().add(expense.getPrice());
         user.setAvailableBudget(updatedBudget);
         expenseDao.deleteExpense(expense);
-        userRepository.save(user);
+        userDao.saveUser(user);
     }
 
     public List<ExpenseDto> getAllExpensesOfUser() {

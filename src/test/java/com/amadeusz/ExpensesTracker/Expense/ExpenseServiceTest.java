@@ -126,7 +126,7 @@ class ExpenseServiceTest {
         verify(userContextService, times(1)).getAuthenticatedUsername();
         verify(userRepository, times(1)).findUserByUsername(user.getUsername());
         verify(categoryRepository, times(1)).findCategoryByName(category.getName());
-        verify(expenseDao, times(1)).insertExpense(any(Expense.class));
+        verify(expenseDao, times(1)).saveExpanse(any(Expense.class));
         verify(userRepository, times(1)).save(user);
     }
 
@@ -168,7 +168,7 @@ class ExpenseServiceTest {
                 .isInstanceOf(InvalidExpenseException.class)
                 .hasMessage("Price must be greater than zero");
 
-        verify(expenseDao, never()).insertExpense(any());
+        verify(expenseDao, never()).saveExpanse(any());
         verify(userRepository, never()).save(any());
     }
 
@@ -210,7 +210,7 @@ class ExpenseServiceTest {
                 .isInstanceOf(InvalidExpenseException.class)
                 .hasMessage("Expense name cannot be blank");
 
-        verify(expenseDao, never()).insertExpense(any());
+        verify(expenseDao, never()).saveExpanse(any());
         verify(userRepository, never()).save(any());
     }
 
@@ -252,7 +252,7 @@ class ExpenseServiceTest {
                 .isInstanceOf(InvalidExpenseException.class)
                 .hasMessage("Expense name cannot be blank");
 
-        verify(expenseDao, never()).insertExpense(any());
+        verify(expenseDao, never()).saveExpanse(any());
         verify(userRepository, never()).save(any());
     }
 
@@ -294,7 +294,7 @@ class ExpenseServiceTest {
                 .isInstanceOf(InvalidExpenseException.class)
                 .hasMessage("Quantity must be greater than zero");
 
-        verify(expenseDao, never()).insertExpense(any());
+        verify(expenseDao, never()).saveExpanse(any());
         verify(userRepository, never()).save(any());
     }
 
@@ -336,7 +336,7 @@ class ExpenseServiceTest {
                 .isInstanceOf(InvalidExpenseException.class)
                 .hasMessage("Owner cannot be null");
 
-        verify(expenseDao, never()).insertExpense(any());
+        verify(expenseDao, never()).saveExpanse(any());
         verify(userRepository, never()).save(any());
     }
 
